@@ -64,8 +64,6 @@ class Projector:
         self._dlatents_expr         = None
         self._images_float_expr     = None
         self._images_uint8_expr     = None
-        self._target_images_var     = None
-        self._lpips                 = None
         self._dist                  = None
         self._loss                  = None
         self._reg_sizes             = None
@@ -132,12 +130,8 @@ class Projector:
 
         # Build loss graph.
         self._info('Building loss graph...')
-        self._target_images_var = tf.Variable(tf.zeros(proc_images_expr.shape), name='target_images_var')
-        if self._lpips is None:
-            with dnnlib.util.open_url('https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada/pretrained/metrics/vgg16_zhang_perceptual.pkl') as f:
-                self._lpips = pickle.load(f)
-        self._dist = self._lpips.get_output_for(proc_images_expr, self._target_images_var)
-        self._loss = tf.reduce_sum(self._dist)
+        
+        self._loss = self.clip(proc_images_expr, self.text_inputs)
 
         # Build noise regularization graph.
         self._info('Building noise regularization graph...')
