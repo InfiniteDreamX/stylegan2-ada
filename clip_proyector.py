@@ -230,20 +230,11 @@ def project(network_pkl: str, target_fname: str, outdir: str, save_video: bool, 
     with dnnlib.util.open_url(network_pkl) as fp:
         _G, _D, Gs = pickle.load(fp)
 
-    # Load target image.
-    target_pil = PIL.Image.open(target_fname)
-    w, h = target_pil.size
-    s = min(w, h)
-    target_pil = target_pil.crop(((w - s) // 2, (h - s) // 2, (w + s) // 2, (h + s) // 2))
-    target_pil= target_pil.convert('RGB')
-    target_pil = target_pil.resize((Gs.output_shape[3], Gs.output_shape[2]), PIL.Image.ANTIALIAS)
-    target_uint8 = np.array(target_pil, dtype=np.uint8)
-    target_float = target_uint8.astype(np.float32).transpose([2, 0, 1]) * (2 / 255) - 1
 
     # Initialize projector.
     proj = Projector(stylegan_size=stylegan_size, text_input=target_fname)
     proj.set_network(Gs)
-    proj.start([target_float])
+    # proj.start([target_float])
 
     # Setup output directory.
     os.makedirs(outdir, exist_ok=True)
